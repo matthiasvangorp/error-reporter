@@ -1,6 +1,6 @@
 # matthiasvangorp/error-reporter
 
-Client library for the self-hosted [Error Dashboard](../error-dashboard) collector. Ships exceptions and optionally log entries from a Laravel app to `POST /api/ingest/{token}` over HMAC-signed HTTPS.
+Laravel client library that ships exceptions and optionally log entries to a self-hosted collector over HMAC-signed HTTPS (`POST /api/ingest/{token}`).
 
 - Async via a queued job — capture is non-blocking.
 - Fails silently — a broken collector must never break the host app.
@@ -20,8 +20,8 @@ php artisan vendor:publish --tag=error-reporter-config
 ```dotenv
 ERROR_REPORTER_ENABLED=true
 ERROR_REPORTER_ENDPOINT=https://errors.example.com
-ERROR_REPORTER_TOKEN=your-project-token-from-the-dashboard
-ERROR_REPORTER_SECRET=your-project-secret-from-the-dashboard
+ERROR_REPORTER_TOKEN=your-project-token
+ERROR_REPORTER_SECRET=your-project-secret
 ERROR_REPORTER_RELEASE=  # commit SHA — see "Release tagging" below
 
 # Optional: route the queued job to a specific connection/queue
@@ -32,8 +32,6 @@ ERROR_REPORTER_QUEUE=default
 ERROR_REPORTER_LOG_ENABLED=false
 ERROR_REPORTER_LOG_LEVEL=error
 ```
-
-Get the token + secret from the collector's Filament admin under **Projects**.
 
 ## How exceptions get captured
 
@@ -161,34 +159,6 @@ The package dispatches `SendEventJob` to whatever queue connection Laravel is co
 - Final failure → logged via `failed()`.
 
 With `QUEUE_CONNECTION=sync` the job runs inline — useful for early local testing. Any sync-driver exception is caught by the reporter's outer `try/catch`, so the host app is still safe.
-
-## Local testing
-
-The collector's seeded `Example` project in the `error-dashboard` repo comes with a token + secret. Grab them:
-
-```bash
-# In the error-dashboard repo
-docker-compose exec mysql mysql -u errors -psecret errors -N \
-    -e "SELECT token, secret FROM projects WHERE slug='example';"
-```
-
-Point your client `.env` at the local collector:
-
-```dotenv
-ERROR_REPORTER_ENDPOINT=https://errors.test
-ERROR_REPORTER_TOKEN=<token from above>
-ERROR_REPORTER_SECRET=<secret from above>
-QUEUE_CONNECTION=sync   # for immediate feedback during testing
-```
-
-Trigger a test event via Tinker:
-
-```php
-app(\MatthiasVanGorp\ErrorReporter\ErrorReporter::class)
-    ->captureException(new \RuntimeException('hello from tinker'));
-```
-
-You should see it pop up at `https://errors.test/admin/issues` almost immediately.
 
 ## Testing the package itself
 
