@@ -6,7 +6,7 @@ Laravel client library that ships exceptions and optionally log entries to a sel
 - Fails silently — a broken collector must never break the host app.
 - PII scrubbing of `password`, tokens, cookies, `Authorization`, and any custom keys you add.
 - HTTPS-only. No direct Guzzle dep — uses Laravel's `Http` facade.
-- Laravel 10, 11, 12. PHP 8.2+.
+- Laravel 10, 11, 12, 13. PHP 8.2+.
 
 ## Install
 
@@ -35,7 +35,7 @@ ERROR_REPORTER_LOG_LEVEL=error
 
 ## How exceptions get captured
 
-**Laravel 11 and 12** — zero configuration. The service provider hooks the host app's `ExceptionHandler::reportable()` in `boot()`, so every exception Laravel reports flows through this package automatically.
+**Laravel 11, 12 and 13** — zero configuration. The service provider hooks the host app's `ExceptionHandler::reportable()` in `boot()`, so every exception Laravel reports flows through this package automatically.
 
 If you prefer explicit wiring (e.g. you inspect `reportable` ordering in `bootstrap/app.php`), you can add it by hand:
 
